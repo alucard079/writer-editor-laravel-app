@@ -160,7 +160,7 @@ const handlePublish = () => {
                                 class="ms-4"
                                 @click="handlePublish"
                                 :class="{ 'opacity-25': form.processing }"
-                                :disabled="form.processing || article.status === 'Published'"
+                                :disabled="form.processing || article.status === 'Published' || $page.props.auth.role === 'writer'"
                             >
                                 Publish
                             </PrimaryButton>
