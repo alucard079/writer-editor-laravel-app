@@ -4,22 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller
 {
-
-    public function __construct()
-    {
-        $this->middleware('role:editor')->except(['index']);
-    }
-
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $users = User::with('roles')->get();
+        Gate::authorize('viewAny', User::class);
 
+        $users = User::with('roles')->get()->map(function ($user) {
+            $user->role = $user->roles->first(); 
+            unset($user->roles); 
+            return $user;
+        });
+        
         return Inertia::render('Users/Index', [
             'users' => $users,
         ]);
@@ -30,6 +33,7 @@ class UserController extends Controller
      */
     public function create()
     {
+        Gate::authorize('create', User::class);
         $roles = Role::all();
 
         return Inertia::render('Users/Create', [
@@ -42,6 +46,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        Gate::authorize('create', User::class);
         // Restricted to editors by middleware
         $validated = $request->validate([
             'firstname' => 'required|string|max:255',
@@ -79,7 +84,10 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        Gate::authorize('update', $user);
         $roles = Role::all();
+
+        $user->role = $user->firstRole();
 
         return Inertia::render('Users/Edit', [
             'user'  => $user,
@@ -92,6 +100,8 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        Gate::authorize('update', $user);
+
         $validated = $request->validate([
             'firstname' => 'required|string|max:255',
             'lastname'  => 'required|string|max:255',
@@ -104,6 +114,7 @@ class UserController extends Controller
             'firstname' => $validated['firstname'],
             'lastname'  => $validated['lastname'],
             'email'     => $validated['email'],
+            'role'      => $validated['role'],
             'status'    => $validated['status'],
         ]);
 
@@ -118,6 +129,8 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        Gate::authorize('update', $user);
+
         $user->delete();
 
         return redirect()->route('users.index')

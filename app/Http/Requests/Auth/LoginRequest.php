@@ -41,11 +41,26 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $credentials = $this->only('email', 'password');
+
+        // Retrieve the user using the provided credentials
+        $user = Auth::getProvider()->retrieveByCredentials($credentials);
+
+        // Check if the user exists and their status is 'Active'
+        if (!$user || $user->status !== 'Active') {
+            throw ValidationException::withMessages([
+                'email' => $user 
+                    ? trans('Your account is inactive. Please contact support.') // Custom message for inactive user
+                    : trans('The provided credentials are incorrect.'),  // Default message for incorrect credentials
+            ]);
+        }
+
+        // Attempt to log in the user
+        if (!Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => trans('The provided credentials are incorrect.'),
             ]);
         }
 

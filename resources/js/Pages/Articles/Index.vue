@@ -2,7 +2,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ArticleTable from './Partials/ArticleTable.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
+import Link from '@/Components/Link.vue';
 
 defineProps({
     role: {
@@ -30,10 +31,10 @@ defineProps({
                     Articles
                 </h2>
                 <Link
-                    class="px-4 py-2 text-sm font-medium bg-green-600 hover:bg-green-700 text-white rounded-md"
-                    :href="route('articles.create')"
+                    v-if="role === 'writer'"
+                    href="articles.create"
                 >
-                    Create Article
+                    CREATE ARTICLE
                 </Link>
             </div>
         </template>
@@ -42,10 +43,9 @@ defineProps({
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <!-- Role-Specific Content -->
                 <Link
-                    class="px-4 py-2 text-sm font-medium bg-green-600 hover:bg-green-700 text-white rounded-md"
-                    :href="route('articles.allmedia')"
+                    href="articles.allmedia"
                 >
-                    Show all media
+                    SHOW ALL MEDIA
                 </Link>
                 <div v-if="role === 'writer'" class="my-4">
                     <h3 class="text-lg font-bold mb-4">Your Articles (For Edit)</h3>

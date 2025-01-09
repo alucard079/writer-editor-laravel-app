@@ -27,9 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/articles/allmedia', [ArticleController::class, 'allmedia'])->name('articles.allmedia');
-    Route::post('/articles/{article}/publish', [ArticleController::class, 'publish'])
-    ->name('articles.publish')
-    ->middleware('role:editor');
+    Route::post('/articles/{article}/publish', [ArticleController::class, 'publish'])->name('articles.publish');
     Route::resource('articles', ArticleController::class);
     Route::resource('users', UserController::class);
     Route::resource('companies', CompanyController::class);

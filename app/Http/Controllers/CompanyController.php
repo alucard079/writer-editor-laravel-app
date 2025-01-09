@@ -5,20 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class CompanyController extends Controller
 {
-
-    public function __construct()
-    {
-        $this->middleware('role:editor')->except(['index']);
-    }
-
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
+        Gate::authorize('viewAny', Company::class);
+
         $companies = Company::all();
 
         return Inertia::render('Companies/Index', [
@@ -31,6 +29,8 @@ class CompanyController extends Controller
      */
     public function create()
     {
+        Gate::authorize('create', Company::class);
+
         return Inertia::render('Companies/Create');
     }
 
@@ -39,6 +39,8 @@ class CompanyController extends Controller
      */
     public function store(Request $request)
     {
+        Gate::authorize('create', Company::class);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -46,11 +48,16 @@ class CompanyController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('public/logos');
-            $validated['logo'] = 'logos/' . basename($path);
+            $path = $request->file('logo')->store('logos', 's3');
+            $logoUrl = Storage::disk('s3')->url($path);
+            Storage::disk('s3')->setVisibility($path, 'public');
         }
 
-        Company::create($validated);
+        Company::create([
+            'name' => $validated['name'],
+            'logo' => $logoUrl,
+            'status' => $validated['status'],
+        ]);
 
         return redirect()->route('companies.index')
             ->with('success', 'Company created successfully!');
@@ -69,6 +76,8 @@ class CompanyController extends Controller
      */
     public function edit(Company $company)
     {
+        Gate::authorize('update', $company);
+
         return Inertia::render('Companies/Edit', [
             'company' => $company,
         ]);
@@ -79,20 +88,25 @@ class CompanyController extends Controller
      */
     public function update(Request $request, Company $company)
     {
+        Gate::authorize('update', $company);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            // 'logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'status' => 'required|in:Active,Inactive',
         ]);
 
-        if ($request->hasFile('logo')) {
-            if ($company->logo) {
-                Storage::delete('public/' . $company->logo);
-            }
-
-            $path = $request->file('logo')->store('public/logos');
-            $validated['logo'] = 'logos/' . basename($path);
-        }
+        // if ($request->hasFile('logo')) {
+        //     if ($company->logo) {
+        //         Storage::disk('s3')->delete($company->logo);
+        //     }
+    
+        //     // Upload the new image to S3
+        //     $path = $request->file('logo')->store('logos', 's3');
+        //     $validated['logo'] = $path;
+        // } else {
+        //     $validated['logo'] = $company->logo;
+        // }
 
         $company->update($validated);
 
@@ -105,6 +119,8 @@ class CompanyController extends Controller
      */
     public function destroy(Company $company)
     {
+        Gate::authorize('update', $delete);
+
         $company->delete();
 
         return redirect()->route('companies.index')

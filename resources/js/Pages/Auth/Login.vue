@@ -5,6 +5,7 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import WriterLogo from '@/Icons/Writer.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 defineProps({
@@ -39,6 +40,7 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <div>
+                <h3 class="text-center mb-2 text-lg flex items-center justify-center">Welcome to Writer Editor App <span><WriterLogo class="text-green-700 ml-2"/></span> </h3>
                 <InputLabel for="email" value="Email" />
 
                 <TextInput
@@ -79,16 +81,16 @@ const submit = () => {
             </div>
 
             <div class="mt-4 flex items-center justify-end">
-                <Link
+                <!-- <Link
                     v-if="canResetPassword"
                     :href="route('password.request')"
                     class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 >
                     Forgot your password?
-                </Link>
+                </Link> -->
 
                 <PrimaryButton
-                    class="ms-4"
+                    class="w-full flex justify-center"
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >

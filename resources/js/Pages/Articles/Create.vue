@@ -28,7 +28,14 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('articles.store'));
+    form.post(route('articles.store'), {
+        onSuccess: () => {
+            toast.success('Article added successfully!', { duration: 3000, type: 'success', position: 'top-right' });
+        },
+        onError: () => {
+            toast.error('Failed to add article!', { duration: 3000, type: 'error', position: 'top-right' });
+        }
+    });
 };
 
 </script>

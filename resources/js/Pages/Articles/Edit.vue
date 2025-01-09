@@ -7,7 +7,7 @@ import TextInput from '@/Components/TextInput.vue';
 import FileInput from '@/Components/FileInput.vue';
 import Select from '@/Components/Select.vue';
 import Editor from '@tinymce/tinymce-vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm} from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -26,7 +26,6 @@ const { article, companies } = props;
 
 const form = useForm({
     company_id: article?.company_id,
-    image: null,
     title: article?.title,
     link: article?.link,
     date: article?.date,
@@ -34,7 +33,25 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.put(route('articles.update', article.id));
+    form.put(route('articles.update', article.id), {
+        onSuccess: () => {
+            toast.success('Article updated successfully!', { duration: 3000, type: 'success', position: 'top-right' });
+        },
+        onError: () => {
+            toast.error('Failed to update article!', { duration: 3000, type: 'error', position: 'top-right' });
+        }
+    });
+};
+
+const handlePublish = () => {
+    form.post(route('articles.publish', article.id), {
+        onSuccess: () => {
+            toast.success('Article published successfully!', { duration: 3000, type: 'success', position: 'top-right' });
+        },
+        onError: () => {
+            toast.error('Failed to publish article!', { duration: 3000, type: 'error', position: 'top-right' });
+        }
+    });
 };
 
 </script>
@@ -64,16 +81,6 @@ const submit = () => {
                                 class="mt-1 block w-full"
                             />
                             <InputError class="mt-2" :message="form.errors.company_id" />
-                        </div>
-
-                        <!-- Image -->
-                        <div class="mb-4">
-                            <InputLabel for="image" value="Image" />
-                            <FileInput
-                                label="Upload New Article Image"
-                                v-model="form.image"
-                            />
-                            <InputError class="mt-2" :message="form.errors.image" />
                         </div>
 
                         <!-- Title -->
@@ -138,11 +145,21 @@ const submit = () => {
                         <!-- Submit Button -->
                         <div class="mt-4 flex items-center justify-end">
                             <PrimaryButton
+                                type="submit"
                                 class="ms-4"
                                 :class="{ 'opacity-25': form.processing }"
                                 :disabled="form.processing"
                             >
-                                Update Article
+                                Save
+                            </PrimaryButton>
+                            <PrimaryButton
+                                type="button"
+                                class="ms-4"
+                                @click="handlePublish"
+                                :class="{ 'opacity-25': form.processing }"
+                                :disabled="form.processing || article.status === 'Published'"
+                            >
+                                Publish
                             </PrimaryButton>
                         </div>
                     </form>

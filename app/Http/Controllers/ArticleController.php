@@ -22,7 +22,7 @@ class ArticleController extends Controller
         $user = $request->user();
 
         if ($user->hasRole('writer')) {
-            $articlesForEdit = Article::with('writer')
+            $articlesForEdit = Article::with(['writer', 'editor'])
                 ->where('writer_id', $user->id)
                 ->where('status', 'For Edit')
                 ->get();
@@ -33,19 +33,9 @@ class ArticleController extends Controller
                 ->get();
 
         } elseif ($user->hasRole('editor')) {
-            $articlesForEdit = Article::where('status', 'For Edit')->get();
-            $publishedArticles = Article::where('status', 'Published')->get();
+            $articlesForEdit = Article::with(['writer', 'editor'])->where('status', 'For Edit')->get();
+            $publishedArticles = Article::with(['writer', 'editor'])->where('status', 'Published')->get();
         }
-
-        $articlesForEdit->transform(function ($article) {
-            $article->image_url = $article->image ? Storage::disk('s3')->url($article->image) : null;
-            return $article;
-        });
-
-        $publishedArticles->transform(function ($article) {
-            $article->image_url = $article->image ? Storage::disk('s3')->url($article->image) : null;
-            return $article;
-        });
 
         return Inertia::render('Articles/Index', [
             'role' => $user->roles->pluck('name')->first(),
@@ -88,12 +78,13 @@ class ArticleController extends Controller
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('articles', 's3');
+            $imageUrl = Storage::disk('s3')->url($path);
             Storage::disk('s3')->setVisibility($path, 'public');
         }
 
         $article = Article::create([
             'company_id' => $validated['company_id'],
-            'image'      => $path ?? null,
+            'image'      => $imageUrl ?? null,
             'title'      => $validated['title'],
             'link'       => $validated['link'],
             'date'       => $validated['date'],
@@ -132,32 +123,40 @@ class ArticleController extends Controller
      */
     public function update(Request $request, Article $article)
     {
+
         Gate::authorize('update', $article);
 
         $validated = $request->validate([
             'company_id' => 'required|exists:companies,id',
-            'image'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'title'      => 'required|string|max:255',
             'link'       => 'required|url',
             'date'       => 'required|date',
             'content'    => 'required|string',
         ]);
 
-        if ($request->hasFile('image')) {
-            if ($article->image) {
-                Storage::disk('s3')->delete($article->image);
-            }
+        // if ($request->hasFile('image')) {
+        //     if ($article->image) {
+        //         Storage::disk('s3')->delete($article->image);
+        //     }
     
-            // Upload the new image to S3
-            $path = $request->file('image')->store('articles', 's3');
-            $validated['image'] = $path;
-        } else {
-            $validated['image'] = $article->image;
-        }
+        //     // Upload the new image to S3
+        //     $path = $request->file('image')->store('articles', 's3');
+        //     Storage::disk('s3')->setVisibility($path, 'public');
+        //     $validated['image'] = Storage::disk('s3')->url($path);
+        // } else {
+        //     $validated['image'] = $article->image;
+        // }
 
-        $article->update($validated);
+        $article->update([
+            'company_id' => $validated['company_id'],
+            'title'      => $validated['title'],
+            'link'       => $validated['link'],
+            'date'       => $validated['date'],
+            'content'    => $validated['content'],
+            'editor_id'  => $request->user()->id,
+        ]);
 
-        return redirect()->route('articles.index')
+        return redirect()->route('articles.allmedia')
             ->with('success', 'Article updated successfully!');
     }
 
@@ -166,7 +165,7 @@ class ArticleController extends Controller
      */
     public function destroy(Article $article)
     {
-        $this->authorize('delete', $article);
+        Gate::authorize('delete', $article);
 
         if ($article->image) {
             Storage::disk('s3')->delete($article->image);
@@ -181,18 +180,18 @@ class ArticleController extends Controller
     /**
      * Publish the specified article.
      */
-    public function publish(Article $article)
+    public function publish(Request $request, Article $article)
     {
-        $this->authorize('publish', $article);
+        Gate::authorize('publish', $article);
 
-        $user = Auth::user();
+        $user = $request->user();
 
         $article->update([
             'status'    => 'Published',
             'editor_id' => $user->id,
         ]);
 
-        return redirect()->route('articles.index')
+        return redirect()->route('articles.allmedia')
             ->with('success', 'Article published successfully!');
     }
 
@@ -210,12 +209,6 @@ class ArticleController extends Controller
         } elseif ($user->hasRole('editor')) {
             $articles = Article::with(['writer', 'editor', 'company'])->get();
         }
-
-        $articles->transform(function ($article) {
-            $article->image_url = $article->image ? Storage::disk('s3')->url($article->image) : null;
-            return $article;
-        });
-
 
         return Inertia::render('Articles/AllMedia', [
             'role' => $user->roles->pluck('name')->first(),

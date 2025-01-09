@@ -6,6 +6,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
+import WriterLogo from '@/Icons/Writer.vue';
 
 const showingNavigationDropdown = ref(false);
 </script>
@@ -22,9 +23,9 @@ const showingNavigationDropdown = ref(false);
                         <div class="flex">
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800"
+                                <Link :href="route('articles.index')">
+                                    <WriterLogo
+                                        class="block h-9 w-auto fill-current text-green-700"
                                     />
                                 </Link>
                             </div>
@@ -34,20 +35,32 @@ const showingNavigationDropdown = ref(false);
                                 class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
                             >
                                 <NavLink
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
-                                >
-                                    Dashboard
-                                </NavLink>
-                            </div>
-                            <div
-                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
-                            >
-                                <NavLink
                                     :href="route('articles.index')"
                                     :active="route().current('articles.index') || route().current('articles.create')"
                                 >
                                     Articles
+                                </NavLink>
+                            </div>
+                            <div
+                                v-if="$page.props.auth.role === 'editor'"
+                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
+                            >
+                                <NavLink
+                                    :href="route('users.index')"
+                                    :active="route().current('users.index') || route().current('users.create')"
+                                >
+                                    Users
+                                </NavLink>
+                            </div>
+                            <div
+                                v-if="$page.props.auth.role === 'editor'"
+                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
+                            >
+                                <NavLink
+                                    :href="route('companies.index')"
+                                    :active="route().current('companies.index') || route().current('companies.create')"
+                                >
+                                    Companies
                                 </NavLink>
                             </div>
                         </div>

@@ -37,7 +37,7 @@ class ArticlePolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['writer', 'editor']);
+        return $user->hasRole('writer');
     }
 
     /**
