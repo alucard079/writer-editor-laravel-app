@@ -153,7 +153,7 @@ class ArticleController extends Controller
             'link'       => $validated['link'],
             'date'       => $validated['date'],
             'content'    => $validated['content'],
-            'editor_id'  => $request->user()->id,
+            'editor_id'  => $request->user()->hasRole('editor') ? $request->user()->id : null,
         ]);
 
         return redirect()->route('articles.allmedia')
