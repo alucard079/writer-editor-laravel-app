@@ -9,7 +9,10 @@ import FileInput from '@/Components/FileInput.vue';
 import Select from '@/Components/Select.vue';
 import Editor from '@tinymce/tinymce-vue'
 import { Head, useForm } from '@inertiajs/vue3';
+import { useToast } from 'vue-toast-notification';
 import { ref } from 'vue';
+
+const toast = useToast();
 
 const props = defineProps({
     company: {

@@ -11,6 +11,9 @@ import Select from '@/Components/Select.vue';
 import Editor from '@tinymce/tinymce-vue'
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { useToast } from 'vue-toast-notification';
+
+const toast = useToast();
 
 defineProps({
     companies : {

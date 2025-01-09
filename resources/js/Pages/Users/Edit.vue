@@ -6,6 +6,9 @@ import TextInput from '@/Components/TextInput.vue';
 import Select from '@/Components/Select.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import InputError from '@/Components/InputError.vue';
+import { useToast } from 'vue-toast-notification';
+
+const toast = useToast();
 
 const props = defineProps({
     user: {

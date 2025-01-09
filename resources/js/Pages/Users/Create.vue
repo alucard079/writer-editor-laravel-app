@@ -5,7 +5,10 @@ import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import Select from '@/Components/Select.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import { useToast } from 'vue-toast-notification';
 import InputError from '@/Components/InputError.vue';
+
+const toast = useToast();
 
 const form = useForm({
     firstname: '',
