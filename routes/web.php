@@ -11,7 +11,7 @@ use Inertia\Inertia;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 Route::get('/', function () {
-    return Inertia::render('Articles/Index');
+    return Inertia::render('Auth/Login');
 });
 
 Route::middleware('auth')->group(function () {
