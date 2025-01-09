@@ -8,6 +8,7 @@ export default defineConfig({
             input: 'resources/js/app.js',
             refresh: true,
         }),
+        
         vue({
             template: {
                 transformAssetUrls: {
@@ -17,4 +18,10 @@ export default defineConfig({
             },
         }),
     ],
+    server: {
+        https: true, // Force HTTPS for the development server
+    },
+    build: {
+        outDir: 'public/build',
+    },
 });
